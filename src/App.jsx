@@ -64,6 +64,7 @@ export default function App() {
   const [tempBudgets, setTempBudgets] = useState({});
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState(null);
   const [toast, setToast] = useState({ msg:"", visible:false });
 
   function showToast(msg) {
@@ -71,11 +72,22 @@ export default function App() {
     setTimeout(() => setToast(t => ({...t, visible:false})), 2500);
   }
 
+  async function fetchTransactions(silent=false) {
+    try {
+      const rows = await apiFetch("transactions?order=date.desc,id.desc");
+      setTransactions(rows);
+      setLastSync(new Date());
+    } catch(e) {
+      if(!silent) showToast("⚠ Erreur connexion : "+e.message);
+    } finally {
+      if(!silent) setLoading(false);
+    }
+  }
+
   useEffect(() => {
-    apiFetch("transactions?order=date.desc,id.desc")
-      .then(rows => setTransactions(rows))
-      .catch(e => showToast("⚠ Erreur connexion : "+e.message))
-      .finally(() => setLoading(false));
+    fetchTransactions(false);
+    const interval = setInterval(() => fetchTransactions(true), 30000);
+    return () => clearInterval(interval);
   }, []);
 
   async function addTransaction() {
@@ -124,15 +136,25 @@ export default function App() {
 
       {/* Header */}
       <div style={{background:"#1B2B3A",padding:"20px 20px 14px",color:"white"}}>
-        <div style={{fontSize:11,letterSpacing:2,opacity:0.5,textTransform:"uppercase",marginBottom:3}}>Budget famille</div>
-        <div style={{fontSize:24,fontWeight:700}}>
-          {view==="accueil"&&"Tableau de bord"}
-          {view==="ajouter"&&"Nouvelle dépense"}
-          {view==="historique"&&"Historique"}
-          {view==="budgets"&&"Mes enveloppes"}
-        </div>
-        <div style={{fontSize:12,opacity:0.45,marginTop:2}}>
-          {new Date().toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+          <div>
+            <div style={{fontSize:11,letterSpacing:2,opacity:0.5,textTransform:"uppercase",marginBottom:3}}>Budget famille</div>
+            <div style={{fontSize:24,fontWeight:700}}>
+              {view==="accueil"&&"Tableau de bord"}
+              {view==="ajouter"&&"Nouvelle dépense"}
+              {view==="historique"&&"Historique"}
+              {view==="budgets"&&"Mes enveloppes"}
+            </div>
+            <div style={{fontSize:12,opacity:0.45,marginTop:2}}>
+              {lastSync ? `Sync ${lastSync.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})}` : new Date().toLocaleDateString("fr-FR",{month:"long",year:"numeric"})}
+            </div>
+          </div>
+          <button onClick={()=>fetchTransactions(false)}
+            style={{background:"rgba(255,255,255,0.12)",border:"none",borderRadius:10,padding:"8px 12px",
+              color:"white",cursor:"pointer",fontSize:18,marginTop:4}}
+            title="Rafraîchir">
+            🔄
+          </button>
         </div>
       </div>
 
