@@ -4,15 +4,14 @@ const SUPABASE_URL = "https://ejhbjfzvajevmmwsxlgy.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqaGJqZnp2YWpldm1td3N4bGd5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MTUyNDIsImV4cCI6MjA5NzI5MTI0Mn0.BKoTh93OJgzIpU8V5iQk6Inh1MGYC9-N-DrPvXAbt8Q";
 
 const CATS = [
-  { id:"courses", label:"Courses", icon:"🛒", color:"#2D6A4F" },
-  { id:"transport", label:"Transport", icon:"🚗", color:"#1D3557" },
+  { id:"courses",    label:"Courses",    icon:"🛒", color:"#2D6A4F" },
   { id:"restaurant", label:"Restaurant", icon:"🍽️", color:"#E76F51" },
-  { id:"loisirs", label:"Loisirs", icon:"🎬", color:"#9B5DE5" },
-  { id:"sante", label:"Santé", icon:"💊", color:"#F4A261" },
-  { id:"autre", label:"Autre", icon:"📦", color:"#457B9D" },
+  { id:"enfants",    label:"Enfants",    icon:"🧒", color:"#9B5DE5" },
+  { id:"maison",     label:"Maison",     icon:"🏠", color:"#457B9D" },
+  { id:"epargne",    label:"Épargne",    icon:"🐷", color:"#E9C46A" },
 ];
 
-const DEFAULT_BUDGETS = { courses:300, transport:100, restaurant:150, loisirs:100, sante:50, autre:100 };
+const DEFAULT_BUDGETS = { courses:50, restaurant:50, enfants:50, maison:50, epargne:50 };
 
 function fmt(v) { return v.toLocaleString("fr-FR",{style:"currency",currency:"EUR"}); }
 function monthKey(d) { return new Date(d).toISOString().slice(0,7); }
