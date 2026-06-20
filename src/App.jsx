@@ -13,6 +13,20 @@ const CATS = [
 
 const DEFAULT_BUDGETS = { courses:50, restaurant:50, enfants:50, maison:50, epargne:50 };
 
+async function fetchBudgets() {
+  const rows = await apiFetch("budgets");
+  const obj = {};
+  rows.forEach(r => { obj[r.id] = r.montant; });
+  return obj;
+}
+
+async function saveBudget(id, montant) {
+  await apiFetch("budgets?id=eq."+id, {
+    method: "PATCH",
+    body: JSON.stringify({ montant })
+  });
+}
+
 function fmt(v) { return v.toLocaleString("fr-FR",{style:"currency",currency:"EUR"}); }
 function monthKey(d) { return new Date(d).toISOString().slice(0,7); }
 function weekKey(d) {
@@ -85,6 +99,7 @@ export default function App() {
   }
 
   useEffect(() => {
+    fetchBudgets().then(b => setBudgets(b)).catch(()=>{});
     fetchTransactions(false);
     const interval = setInterval(() => fetchTransactions(true), 30000);
     return () => clearInterval(interval);
@@ -323,7 +338,15 @@ export default function App() {
                   <button onClick={()=>setEditBudgets(false)}
                     style={{flex:1,padding:13,borderRadius:12,border:"1.5px solid #E0E0E0",cursor:"pointer",
                       background:"white",color:"#555",fontWeight:600,fontSize:15}}>Annuler</button>
-                  <button onClick={()=>{setBudgets(b=>({...b,...tempBudgets}));setEditBudgets(false);showToast("✓ Enveloppes enregistrées !");}}
+                  <button onClick={async ()=>{
+                    const updated = {...budgets,...tempBudgets};
+                    setBudgets(updated);
+                    setEditBudgets(false);
+                    try {
+                      await Promise.all(Object.entries(tempBudgets).map(([id,montant])=>saveBudget(id,montant)));
+                      showToast("✓ Enveloppes enregistrées !");
+                    } catch(e) { showToast("⚠ Erreur sauvegarde"); }
+                  }}
                     style={{flex:2,padding:13,borderRadius:12,border:"none",cursor:"pointer",
                       background:"#2D6A4F",color:"white",fontWeight:700,fontSize:15}}>Enregistrer</button>
                 </div>
